@@ -1,16 +1,7 @@
-
-import React, { useEffect, useState } from 'react';
+import AuthPages from './components/AuthPages';
 
 function App() {
-  const [msg, setMsg] = useState('');
-
-  useEffect(() => {
-    fetch('http://localhost:5000/api/hello')
-      .then(res => res.json())
-      .then(data => setMsg(data.message));
-  }, []);
-
-  return <div>{msg}</div>;
+  return <AuthPages />;
 }
 
 export default App;
