@@ -1,9 +1,12 @@
 import os
+import hashlib
+import secrets
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from supabase import create_client, Client
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -14,13 +17,18 @@ SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+def validate_email(email):
+    """Validate email format"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
 @app.route('/api/hello')
 def hello():
     return jsonify(message="Hello from Flask!")
 
-# Example: Get user profile data
 @app.route('/api/profile/<user_id>', methods=['GET'])
 def get_profile(user_id):
+    """Get user profile by ID"""
     try:
         profile_result = supabase.table('profiles').select('*').eq('id', user_id).execute()
         
@@ -33,46 +41,49 @@ def get_profile(user_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Example: Update user profile
+@app.route('/api/profiles', methods=['GET'])
+def get_all_profiles():
+    """Get all user profiles"""
+    try:
+        profiles_result = supabase.table('profiles').select('*').execute()
+        return jsonify({'profiles': profiles_result.data}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/profile/<user_id>', methods=['PUT'])
 def update_profile(user_id):
+    """Update user profile"""
     try:
         data = request.get_json()
         
-        # Update profile data
-        update_data = {}
-        allowed_fields = ['first_name', 'last_name', 'username', 'phone', 
-                         'date_of_birth', 'country', 'city', 'bio', 'avatar_url']
+        # Remove id and email from update data (shouldn't be changed)
+        update_data = {k: v for k, v in data.items() if k not in ['id', 'email']}
         
-        for field in allowed_fields:
-            if field in data:
-                update_data[field] = data[field]
+        result = supabase.table('profiles').update(update_data).eq('id', user_id).execute()
         
-        if update_data:
-            update_data['updated_at'] = datetime.utcnow().isoformat()
-            
-            result = supabase.table('profiles').update(update_data).eq('id', user_id).execute()
-            
-            if result.data:
-                return jsonify({
-                    'message': 'Profile updated successfully',
-                    'profile': result.data[0]
-                }), 200
-            else:
-                return jsonify({'error': 'Failed to update profile'}), 500
+        if result.data:
+            return jsonify({
+                'message': 'Profile updated successfully',
+                'profile': result.data[0]
+            }), 200
         else:
-            return jsonify({'error': 'No valid fields to update'}), 400
+            return jsonify({'error': 'Failed to update profile'}), 500
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Example: Get all user profiles (for admin purposes or user listing)
-@app.route('/api/profiles', methods=['GET'])
-def get_all_profiles():
+@app.route('/api/profile/<user_id>', methods=['DELETE'])
+def delete_profile(user_id):
+    """Delete user profile"""
     try:
-        profiles_result = supabase.table('profiles').select('id, first_name, last_name, username, country, city, created_at').execute()
-        return jsonify({'profiles': profiles_result.data}), 200
+        result = supabase.table('profiles').delete().eq('id', user_id).execute()
         
+        if result.data:
+            return jsonify({'message': 'Profile deleted successfully'}), 200
+        else:
+            return jsonify({'error': 'Profile not found'}), 404
+            
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
