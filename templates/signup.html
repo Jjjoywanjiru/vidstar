@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - VidStar</title>
+    <style>
+        /* ... your existing styles ... */
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="logo">VidStar</div>
+        <p class="subtitle">Create your account</p>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ 'success' if category == 'success' else 'error' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- CHANGE THIS LINE: action="/signup" instead of "/api/auth/signup" -->
+        <form action="/signup" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_celebrity" name="is_celebrity" onchange="toggleCelebrityInfo()">
+                <label for="is_celebrity" class="checkbox-label">I am a celebrity</label>
+            </div>
+
+            <div id="celebrity-info" class="celebrity-info" style="display: none;">
+                <p><strong>Celebrity Account Benefits:</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>Receive personalized video requests from fans</li>
+                    <li>Set your own pricing for custom videos</li>
+                    <li>Manage requests through your celebrity dashboard</li>
+                    <li>Build direct connections with your fanbase</li>
+                </ul>
+                <p><em>Note: Celebrity accounts require manual verification before activation.</em></p>
+            </div>
+
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="/login">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleCelebrityInfo() {
+            const checkbox = document.getElementById('is_celebrity');
+            const info = document.getElementById('celebrity-info');
+            
+            if (checkbox.checked) {
+                info.style.display = 'block';
+            } else {
+                info.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
