@@ -1,6 +1,5 @@
 import os
 import uuid
-import hashlib
 import secrets
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_file, render_template, redirect, url_for, flash, session
@@ -55,9 +54,14 @@ def signup_page():
     """Signup page"""
     return render_template('signup.html')
 
+@app.route('/email-verification')
+def email_verification_page():
+    """Email verification page"""
+    return render_template('email_verification.html')
+
 @app.route('/api/auth/signup', methods=['POST'])
 def signup():
-    """Handle user registration"""
+    """Handle user registration with email verification"""
     try:
         # Get form data
         email = request.form.get('email')
@@ -79,43 +83,51 @@ def signup():
             flash('Password must be at least 6 characters', 'error')
             return redirect(url_for('signup_page'))
         
-        # Check if user already exists
-        existing_user = supabase.table('users').select('*').eq('email', email).execute()
-        if existing_user.data:
-            flash('Email already registered', 'error')
-            return redirect(url_for('signup_page'))
-        
-        # Hash password (in production, use proper password hashing)
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
-        
-        # Create user
-        user_data = {
-            'id': str(uuid.uuid4()),
-            'email': email,
-            'password_hash': password_hash,
-            'first_name': first_name,
-            'last_name': last_name,
-            'is_celebrity': is_celebrity,
-            'celebrity_verified': False,
-            'created_at': datetime.utcnow().isoformat()
-        }
-        
-        result = supabase.table('users').insert(user_data).execute()
-        
-        if result.data:
-            # Set session
-            session['user_id'] = result.data[0]['id']
-            session['is_celebrity'] = is_celebrity
+        try:
+            # Use Supabase Auth to create user with email verification
+            auth_response = supabase.auth.sign_up({
+                "email": email,
+                "password": password,
+                "options": {
+                    "data": {
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "is_celebrity": is_celebrity
+                    }
+                }
+            })
             
-            flash('Registration successful!', 'success')
-            
-            # Redirect based on user type
-            if is_celebrity:
-                return redirect(url_for('celebrity_dashboard'))
+            if auth_response.user:
+                # Create profile in users table
+                user_data = {
+                    'id': auth_response.user.id,
+                    'email': email,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'is_celebrity': is_celebrity,
+                    'celebrity_verified': False,
+                    'email_verified': False,  # This matches your Flask code
+                    'created_at': datetime.utcnow().isoformat()
+                }
+                
+                result = supabase.table('users').insert(user_data).execute()
+                
+                if result.data:
+                    flash('Registration successful! Please check your email to verify your account before logging in.', 'success')
+                    return redirect(url_for('email_verification_page'))
+                else:
+                    flash('Registration failed. Could not create user profile.', 'error')
+                    return redirect(url_for('signup_page'))
             else:
-                return redirect(url_for('user_dashboard'))
-        else:
-            flash('Registration failed. Please try again.', 'error')
+                flash('Registration failed. Email may already be in use.', 'error')
+                return redirect(url_for('signup_page'))
+                
+        except Exception as auth_error:
+            error_message = str(auth_error)
+            if "already registered" in error_message.lower():
+                flash('Email already registered', 'error')
+            else:
+                flash('Registration failed. Please try again.', 'error')
             return redirect(url_for('signup_page'))
             
     except Exception as e:
@@ -133,35 +145,100 @@ def login():
             flash('Email and password are required', 'error')
             return redirect(url_for('login_page'))
         
-        # Hash password to compare
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
-        
-        # Find user
-        user_result = supabase.table('users').select('*').eq('email', email).eq('password_hash', password_hash).execute()
-        
-        if user_result.data:
-            user = user_result.data[0]
-            session['user_id'] = user['id']
-            session['is_celebrity'] = user['is_celebrity']
+        try:
+            # Use Supabase Auth to sign in
+            auth_response = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
             
-            flash('Login successful!', 'success')
-            
-            # Redirect based on user type
-            if user['is_celebrity']:
-                return redirect(url_for('celebrity_dashboard'))
+            if auth_response.user:
+                # Check if email is verified using Supabase Auth's property
+                if not auth_response.user.email_confirmed_at:
+                    flash('Please verify your email address before logging in. Check your inbox.', 'error')
+                    return redirect(url_for('email_verification_page'))
+                
+                # Get user profile
+                user_result = supabase.table('users').select('*').eq('id', auth_response.user.id).execute()
+                
+                if user_result.data:
+                    user = user_result.data[0]
+                    
+                    # Update email verification status if needed
+                    if not user.get('email_verified', False):
+                        supabase.table('users').update({
+                            'email_verified': True,
+                            'updated_at': datetime.utcnow().isoformat()
+                        }).eq('id', user['id']).execute()
+                    
+                    # Set session
+                    session['user_id'] = user['id']
+                    session['email'] = user['email']
+                    session['is_celebrity'] = user['is_celebrity']
+                    session['access_token'] = auth_response.session.access_token
+                    
+                    flash('Login successful!', 'success')
+                    
+                    # Redirect based on user type
+                    if user['is_celebrity']:
+                        return redirect(url_for('celebrity_dashboard'))
+                    else:
+                        return redirect(url_for('user_dashboard'))
+                else:
+                    flash('User profile not found', 'error')
+                    return redirect(url_for('login_page'))
             else:
-                return redirect(url_for('user_dashboard'))
-        else:
-            flash('Invalid email or password', 'error')
+                flash('Invalid email or password', 'error')
+                return redirect(url_for('login_page'))
+                
+        except Exception as auth_error:
+            error_message = str(auth_error)
+            if "invalid" in error_message.lower():
+                flash('Invalid email or password', 'error')
+            elif "not confirmed" in error_message.lower():
+                flash('Please verify your email address before logging in', 'error')
+                return redirect(url_for('email_verification_page'))
+            else:
+                flash('Login failed. Please try again.', 'error')
             return redirect(url_for('login_page'))
             
     except Exception as e:
         flash(f'Login failed: {str(e)}', 'error')
         return redirect(url_for('login_page'))
 
+@app.route('/api/auth/resend-verification', methods=['POST'])
+def resend_verification():
+    """Resend email verification"""
+    try:
+        email = request.form.get('email')
+        
+        if not email:
+            flash('Email is required', 'error')
+            return redirect(url_for('email_verification_page'))
+        
+        # Resend verification email
+        supabase.auth.resend({
+            "type": "signup",
+            "email": email
+        })
+        
+        flash('Verification email sent! Please check your inbox.', 'success')
+        return redirect(url_for('email_verification_page'))
+        
+    except Exception as e:
+        flash(f'Error sending verification email: {str(e)}', 'error')
+        return redirect(url_for('email_verification_page'))
+
 @app.route('/logout')
 def logout():
     """Handle user logout"""
+    try:
+        if 'access_token' in session:
+            # Sign out from Supabase
+            supabase.auth.sign_out()
+    except:
+        pass  # Continue even if sign out fails
+    
     session.clear()
     flash('You have been logged out', 'info')
     return redirect(url_for('index'))
