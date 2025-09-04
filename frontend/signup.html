@@ -4,21 +4,271 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - VidStar</title>
-    <link rel="stylesheet" href="assets/signup.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .signup-container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 2px solid #dc2626;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 1.5rem;
+            background: rgba(220, 38, 38, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #dc2626;
+        }
+
+        .checkbox-label {
+            color: #e5e7eb;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .celebrity-info {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #d1d5db;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .login-link {
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .login-link a {
+            color: #dc2626;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .flash-message {
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .flash-success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .signup-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Sign Up</h2>
-        <form id="signupForm">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required>
-            <button type="submit">Sign Up</button>
+    <div class="signup-container">
+        <div class="logo">VidStar</div>
+        <p class="subtitle">Create your account</p>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ 'success' if category == 'success' else 'error' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <form action="/api/auth/signup" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_celebrity" name="is_celebrity" onchange="toggleCelebrityInfo()">
+                <label for="is_celebrity" class="checkbox-label">I am a celebrity</label>
+            </div>
+
+            <div id="celebrity-info" class="celebrity-info" style="display: none;">
+                <p><strong>Celebrity Account Benefits:</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>Receive personalized video requests from fans</li>
+                    <li>Set your own pricing for custom videos</li>
+                    <li>Manage requests through your celebrity dashboard</li>
+                    <li>Build direct connections with your fanbase</li>
+                </ul>
+                <p><em>Note: Celebrity accounts require manual verification before activation.</em></p>
+            </div>
+
+            <button type="submit" class="btn">Create Account</button>
         </form>
-        <p>Already have an account? <a href="login.html">Login</a></p>
+
+        <div class="login-link">
+            Already have an account? <a href="/login">Login here</a>
+        </div>
     </div>
+
+    <script>
+        function toggleCelebrityInfo() {
+            const checkbox = document.getElementById('is_celebrity');
+            const info = document.getElementById('celebrity-info');
+            
+            if (checkbox.checked) {
+                info.style.display = 'block';
+            } else {
+                info.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

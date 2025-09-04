@@ -3,7 +3,7 @@ import uuid
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template, redirect, url_for, flash, session
 from flask_cors import CORS
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -13,8 +13,9 @@ import mimetypes
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/assets')
 CORS(app)
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
 # Configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL')
@@ -37,112 +38,219 @@ def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
-def generate_video_token():
-    """Generate a unique token for video sharing"""
-    return secrets.token_urlsafe(32)
-
 # ============ AUTHENTICATION ROUTES ============
 
-@app.route('/api/auth/profile/<user_id>', methods=['GET'])
-def get_user_profile(user_id):
-    """Get user profile with celebrity status"""
-    try:
-        profile_result = supabase.table('profiles').select('*').eq('id', user_id).execute()
-        
-        if not profile_result.data:
-            return jsonify({'error': 'Profile not found'}), 404
-        
-        profile = profile_result.data[0]
-        return jsonify({'profile': profile}), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@app.route('/')
+def index():
+    """Landing page"""
+    return render_template('index.html')
 
-@app.route('/api/auth/profile/<user_id>', methods=['PUT'])
-def update_user_profile(user_id):
-    """Update user profile"""
+@app.route('/login')
+def login_page():
+    """Login page"""
+    return render_template('login.html')
+
+@app.route('/signup')
+def signup_page():
+    """Signup page"""
+    return render_template('signup.html')
+
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    """Handle user registration"""
     try:
-        data = request.get_json()
+        # Get form data
+        email = request.form.get('email')
+        password = request.form.get('password')
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        is_celebrity = request.form.get('is_celebrity') == 'on'
         
-        # Remove sensitive fields that shouldn't be updated directly
-        update_data = {k: v for k, v in data.items() if k not in ['id', 'email', 'created_at']}
-        update_data['updated_at'] = datetime.utcnow().isoformat()
+        # Validation
+        if not email or not password or not first_name or not last_name:
+            flash('All fields are required', 'error')
+            return redirect(url_for('signup_page'))
         
-        result = supabase.table('profiles').update(update_data).eq('id', user_id).execute()
+        if not validate_email(email):
+            flash('Invalid email format', 'error')
+            return redirect(url_for('signup_page'))
+        
+        if len(password) < 6:
+            flash('Password must be at least 6 characters', 'error')
+            return redirect(url_for('signup_page'))
+        
+        # Check if user already exists
+        existing_user = supabase.table('users').select('*').eq('email', email).execute()
+        if existing_user.data:
+            flash('Email already registered', 'error')
+            return redirect(url_for('signup_page'))
+        
+        # Hash password (in production, use proper password hashing)
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        
+        # Create user
+        user_data = {
+            'id': str(uuid.uuid4()),
+            'email': email,
+            'password_hash': password_hash,
+            'first_name': first_name,
+            'last_name': last_name,
+            'is_celebrity': is_celebrity,
+            'celebrity_verified': False,
+            'created_at': datetime.utcnow().isoformat()
+        }
+        
+        result = supabase.table('users').insert(user_data).execute()
         
         if result.data:
-            return jsonify({
-                'message': 'Profile updated successfully',
-                'profile': result.data[0]
-            }), 200
+            # Set session
+            session['user_id'] = result.data[0]['id']
+            session['is_celebrity'] = is_celebrity
+            
+            flash('Registration successful!', 'success')
+            
+            # Redirect based on user type
+            if is_celebrity:
+                return redirect(url_for('celebrity_dashboard'))
+            else:
+                return redirect(url_for('user_dashboard'))
         else:
-            return jsonify({'error': 'Failed to update profile'}), 500
+            flash('Registration failed. Please try again.', 'error')
+            return redirect(url_for('signup_page'))
             
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'An error occurred: {str(e)}', 'error')
+        return redirect(url_for('signup_page'))
 
-# ============ CELEBRITY ROUTES ============
-
-@app.route('/api/celebrities', methods=['GET'])
-def get_celebrities():
-    """Get all verified celebrities"""
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Handle user login"""
     try:
-        celebrities_result = supabase.table('profiles').select('*').eq('is_celebrity', True).eq('celebrity_verified', True).execute()
-        return jsonify({'celebrities': celebrities_result.data}), 200
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if not email or not password:
+            flash('Email and password are required', 'error')
+            return redirect(url_for('login_page'))
+        
+        # Hash password to compare
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        
+        # Find user
+        user_result = supabase.table('users').select('*').eq('email', email).eq('password_hash', password_hash).execute()
+        
+        if user_result.data:
+            user = user_result.data[0]
+            session['user_id'] = user['id']
+            session['is_celebrity'] = user['is_celebrity']
+            
+            flash('Login successful!', 'success')
+            
+            # Redirect based on user type
+            if user['is_celebrity']:
+                return redirect(url_for('celebrity_dashboard'))
+            else:
+                return redirect(url_for('user_dashboard'))
+        else:
+            flash('Invalid email or password', 'error')
+            return redirect(url_for('login_page'))
+            
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Login failed: {str(e)}', 'error')
+        return redirect(url_for('login_page'))
 
-@app.route('/api/celebrities/<celebrity_id>/requests', methods=['GET'])
-def get_celebrity_requests(celebrity_id):
-    """Get all fan requests for a specific celebrity"""
+@app.route('/logout')
+def logout():
+    """Handle user logout"""
+    session.clear()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('index'))
+
+# ============ DASHBOARD ROUTES ============
+
+@app.route('/dashboard')
+def user_dashboard():
+    """User dashboard"""
+    if 'user_id' not in session:
+        return redirect(url_for('login_page'))
+    
+    if session.get('is_celebrity'):
+        return redirect(url_for('celebrity_dashboard'))
+    
     try:
+        # Get user info
+        user_result = supabase.table('users').select('*').eq('id', session['user_id']).execute()
+        user = user_result.data[0] if user_result.data else None
+        
+        # Get verified celebrities
+        celebrities_result = supabase.table('users').select('*').eq('is_celebrity', True).eq('celebrity_verified', True).execute()
+        celebrities = celebrities_result.data
+        
+        # Get user's video requests
         requests_result = supabase.table('video_requests').select('''
             *,
-            requester:profiles!video_requests_requester_id_fkey(first_name, last_name, email)
-        ''').eq('celebrity_id', celebrity_id).order('created_at', desc=True).execute()
+            celebrity:users!video_requests_celebrity_id_fkey(first_name, last_name)
+        ''').eq('requester_id', session['user_id']).order('created_at', desc=True).execute()
+        requests = requests_result.data
         
-        return jsonify({'requests': requests_result.data}), 200
+        return render_template('user_dashboard.html', 
+                             user=user, 
+                             celebrities=celebrities, 
+                             requests=requests)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error loading dashboard: {str(e)}', 'error')
+        return redirect(url_for('index'))
 
-@app.route('/api/celebrities/<celebrity_id>/verify', methods=['POST'])
-def verify_celebrity(celebrity_id):
-    """Admin route to verify celebrity status"""
+@app.route('/celebrity-dashboard')
+def celebrity_dashboard():
+    """Celebrity dashboard"""
+    if 'user_id' not in session or not session.get('is_celebrity'):
+        return redirect(url_for('login_page'))
+    
     try:
-        # In a real app, this would require admin authentication
-        result = supabase.table('profiles').update({
-            'celebrity_verified': True,
-            'updated_at': datetime.utcnow().isoformat()
-        }).eq('id', celebrity_id).execute()
+        # Get celebrity info
+        celebrity_result = supabase.table('users').select('*').eq('id', session['user_id']).execute()
+        celebrity = celebrity_result.data[0] if celebrity_result.data else None
         
-        if result.data:
-            return jsonify({'message': 'Celebrity verified successfully'}), 200
-        else:
-            return jsonify({'error': 'Celebrity not found'}), 404
-            
+        # Get incoming requests
+        requests_result = supabase.table('video_requests').select('''
+            *,
+            requester:users!video_requests_requester_id_fkey(first_name, last_name, email)
+        ''').eq('celebrity_id', session['user_id']).order('created_at', desc=True).execute()
+        requests = requests_result.data
+        
+        return render_template('celebrity_dashboard.html', 
+                             celebrity=celebrity, 
+                             requests=requests)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error loading dashboard: {str(e)}', 'error')
+        return redirect(url_for('index'))
 
 # ============ VIDEO REQUEST ROUTES ============
 
-@app.route('/api/requests', methods=['POST'])
+@app.route('/api/requests/create', methods=['POST'])
 def create_video_request():
     """Create a new video request from fan to celebrity"""
+    if 'user_id' not in session:
+        return redirect(url_for('login_page'))
+    
     try:
-        data = request.get_json()
+        celebrity_id = request.form.get('celebrity_id')
+        recipient_name = request.form.get('recipient_name')
+        occasion = request.form.get('occasion')
+        message_details = request.form.get('message_details')
         
-        required_fields = ['celebrity_id', 'requester_id', 'recipient_name', 'occasion', 'message_details']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+        if not all([celebrity_id, recipient_name, occasion, message_details]):
+            flash('All fields are required', 'error')
+            return redirect(url_for('user_dashboard'))
         
         request_data = {
             'id': str(uuid.uuid4()),
-            'celebrity_id': data['celebrity_id'],
-            'requester_id': data['requester_id'],
-            'recipient_name': data['recipient_name'],
-            'occasion': data['occasion'],
-            'message_details': data['message_details'],
+            'celebrity_id': celebrity_id,
+            'requester_id': session['user_id'],
+            'recipient_name': recipient_name,
+            'occasion': occasion,
+            'message_details': message_details,
             'status': 'pending',
             'created_at': datetime.utcnow().isoformat()
         }
@@ -150,76 +258,112 @@ def create_video_request():
         result = supabase.table('video_requests').insert(request_data).execute()
         
         if result.data:
-            return jsonify({
-                'message': 'Video request created successfully',
-                'request': result.data[0]
-            }), 201
+            flash('Video request sent successfully!', 'success')
         else:
-            return jsonify({'error': 'Failed to create request'}), 500
+            flash('Failed to send request. Please try again.', 'error')
             
+        return redirect(url_for('user_dashboard'))
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error creating request: {str(e)}', 'error')
+        return redirect(url_for('user_dashboard'))
 
 @app.route('/api/requests/<request_id>/accept', methods=['POST'])
 def accept_video_request(request_id):
     """Celebrity accepts a video request"""
+    if 'user_id' not in session or not session.get('is_celebrity'):
+        return redirect(url_for('login_page'))
+    
     try:
         result = supabase.table('video_requests').update({
             'status': 'accepted',
             'accepted_at': datetime.utcnow().isoformat()
-        }).eq('id', request_id).execute()
+        }).eq('id', request_id).eq('celebrity_id', session['user_id']).execute()
         
         if result.data:
-            return jsonify({
-                'message': 'Request accepted successfully',
-                'request': result.data[0]
-            }), 200
+            flash('Request accepted! You can now upload a video.', 'success')
         else:
-            return jsonify({'error': 'Request not found'}), 404
+            flash('Failed to accept request.', 'error')
             
+        return redirect(url_for('celebrity_dashboard'))
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error accepting request: {str(e)}', 'error')
+        return redirect(url_for('celebrity_dashboard'))
 
 @app.route('/api/requests/<request_id>/reject', methods=['POST'])
 def reject_video_request(request_id):
     """Celebrity rejects a video request"""
+    if 'user_id' not in session or not session.get('is_celebrity'):
+        return redirect(url_for('login_page'))
+    
     try:
-        data = request.get_json()
-        rejection_reason = data.get('reason', 'No reason provided')
+        rejection_reason = request.form.get('reason', 'No reason provided')
         
         result = supabase.table('video_requests').update({
             'status': 'rejected',
             'rejection_reason': rejection_reason,
             'rejected_at': datetime.utcnow().isoformat()
-        }).eq('id', request_id).execute()
+        }).eq('id', request_id).eq('celebrity_id', session['user_id']).execute()
         
         if result.data:
-            return jsonify({
-                'message': 'Request rejected',
-                'request': result.data[0]
-            }), 200
+            flash('Request rejected.', 'info')
         else:
-            return jsonify({'error': 'Request not found'}), 404
+            flash('Failed to reject request.', 'error')
             
+        return redirect(url_for('celebrity_dashboard'))
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error rejecting request: {str(e)}', 'error')
+        return redirect(url_for('celebrity_dashboard'))
 
-# ============ VIDEO UPLOAD AND MANAGEMENT ============
+# ============ VIDEO UPLOAD ROUTES ============
+
+@app.route('/upload/<request_id>')
+def upload_page(request_id):
+    """Video upload page for celebrities"""
+    if 'user_id' not in session or not session.get('is_celebrity'):
+        return redirect(url_for('login_page'))
+    
+    try:
+        # Verify request belongs to this celebrity and is accepted
+        request_result = supabase.table('video_requests').select('''
+            *,
+            requester:users!video_requests_requester_id_fkey(first_name, last_name)
+        ''').eq('id', request_id).eq('celebrity_id', session['user_id']).eq('status', 'accepted').execute()
+        
+        if not request_result.data:
+            flash('Invalid request or not authorized', 'error')
+            return redirect(url_for('celebrity_dashboard'))
+        
+        video_request = request_result.data[0]
+        return render_template('upload_video.html', request=video_request)
+        
+    except Exception as e:
+        flash(f'Error loading upload page: {str(e)}', 'error')
+        return redirect(url_for('celebrity_dashboard'))
 
 @app.route('/api/videos/upload', methods=['POST'])
 def upload_video():
-    """Upload video file for celebrity response or family message"""
+    """Handle video upload"""
+    if 'user_id' not in session or not session.get('is_celebrity'):
+        return redirect(url_for('login_page'))
+    
     try:
         if 'video' not in request.files:
-            return jsonify({'error': 'No video file provided'}), 400
+            flash('No video file provided', 'error')
+            return redirect(request.referrer)
         
         file = request.files['video']
+        request_id = request.form.get('request_id')
         
         if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+            flash('No file selected', 'error')
+            return redirect(request.referrer)
         
         if not allowed_file(file.filename):
-            return jsonify({'error': 'Invalid file type. Allowed: mp4, mov, avi, mkv, webm'}), 400
+            flash('Invalid file type. Allowed: mp4, mov, avi, mkv, webm', 'error')
+            return redirect(request.referrer)
         
         # Generate unique filename
         file_extension = file.filename.rsplit('.', 1)[1].lower()
@@ -229,106 +373,110 @@ def upload_video():
         # Save file
         file.save(file_path)
         
-        # Get additional data from form
-        video_type = request.form.get('type', 'family')  # 'celebrity' or 'family'
-        request_id = request.form.get('request_id')
-        uploader_id = request.form.get('uploader_id')
-        title = request.form.get('title', '')
-        description = request.form.get('description', '')
-        
-        # Generate shareable token for family videos
-        share_token = generate_video_token() if video_type == 'family' else None
-        
-        # Create video record in database
+        # Create video record
         video_data = {
             'id': str(uuid.uuid4()),
+            'request_id': request_id,
+            'celebrity_id': session['user_id'],
             'filename': unique_filename,
             'original_filename': secure_filename(file.filename),
             'file_path': file_path,
-            'uploader_id': uploader_id,
-            'video_type': video_type,
-            'title': title,
-            'description': description,
-            'share_token': share_token,
             'created_at': datetime.utcnow().isoformat()
         }
         
-        if request_id:
-            video_data['request_id'] = request_id
+        video_result = supabase.table('videos').insert(video_data).execute()
         
-        result = supabase.table('videos').insert(video_data).execute()
-        
-        if result.data:
-            # If this is a celebrity response, update the request status
-            if video_type == 'celebrity' and request_id:
-                supabase.table('video_requests').update({
-                    'status': 'completed',
-                    'video_id': result.data[0]['id'],
-                    'completed_at': datetime.utcnow().isoformat()
-                }).eq('id', request_id).execute()
+        if video_result.data:
+            # Update request status to completed
+            supabase.table('video_requests').update({
+                'status': 'completed',
+                'video_id': video_result.data[0]['id'],
+                'completed_at': datetime.utcnow().isoformat()
+            }).eq('id', request_id).execute()
             
-            response_data = {
-                'message': 'Video uploaded successfully',
-                'video': result.data[0]
-            }
-            
-            # Include shareable link for family videos
-            if share_token:
-                response_data['share_url'] = f"{request.host_url}watch/{share_token}"
-            
-            return jsonify(response_data), 201
+            flash('Video uploaded successfully!', 'success')
         else:
             # Clean up file if database insert failed
             if os.path.exists(file_path):
                 os.remove(file_path)
-            return jsonify({'error': 'Failed to save video record'}), 500
-            
+            flash('Failed to save video record', 'error')
+        
+        return redirect(url_for('celebrity_dashboard'))
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error uploading video: {str(e)}', 'error')
+        return redirect(request.referrer)
 
-@app.route('/api/videos/watch/<share_token>')
-def get_video_by_token(share_token):
-    """Get video information by share token"""
+# ============ VIDEO VIEWING ROUTES ============
+
+@app.route('/watch/<video_id>')
+def watch_video(video_id):
+    """Watch uploaded video"""
+    if 'user_id' not in session:
+        return redirect(url_for('login_page'))
+    
     try:
+        # Get video info with request details
         video_result = supabase.table('videos').select('''
             *,
-            uploader:profiles!videos_uploader_id_fkey(first_name, last_name)
-        ''').eq('share_token', share_token).execute()
+            request:video_requests!videos_request_id_fkey(
+                recipient_name, 
+                occasion, 
+                message_details,
+                requester_id
+            ),
+            celebrity:users!videos_celebrity_id_fkey(first_name, last_name)
+        ''').eq('id', video_id).execute()
         
         if not video_result.data:
-            return jsonify({'error': 'Video not found or expired'}), 404
+            flash('Video not found', 'error')
+            return redirect(url_for('user_dashboard'))
         
         video = video_result.data[0]
         
-        # Check if video exists on filesystem
-        if not os.path.exists(video['file_path']):
-            return jsonify({'error': 'Video file not found'}), 404
+        # Check if user has permission to view this video
+        if not session.get('is_celebrity'):
+            # Regular user can only view videos from their requests
+            if video['request']['requester_id'] != session['user_id']:
+                flash('Not authorized to view this video', 'error')
+                return redirect(url_for('user_dashboard'))
+        else:
+            # Celebrity can only view their own uploaded videos
+            if video['celebrity_id'] != session['user_id']:
+                flash('Not authorized to view this video', 'error')
+                return redirect(url_for('celebrity_dashboard'))
         
-        return jsonify({'video': video}), 200
+        return render_template('watch_video.html', video=video)
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error loading video: {str(e)}', 'error')
+        return redirect(url_for('user_dashboard'))
 
-@app.route('/api/videos/stream/<share_token>')
-def stream_video(share_token):
-    """Stream video file by share token"""
+@app.route('/api/videos/stream/<video_id>')
+def stream_video(video_id):
+    """Stream video file"""
+    if 'user_id' not in session:
+        return redirect(url_for('login_page'))
+    
     try:
-        video_result = supabase.table('videos').select('file_path, original_filename').eq('share_token', share_token).execute()
+        video_result = supabase.table('videos').select('file_path, request_id').eq('id', video_id).execute()
         
         if not video_result.data:
             return jsonify({'error': 'Video not found'}), 404
         
         video = video_result.data[0]
+        
+        # Verify user has permission to view this video
+        request_result = supabase.table('video_requests').select('requester_id').eq('id', video['request_id']).execute()
+        
+        if request_result.data:
+            if not session.get('is_celebrity') and request_result.data[0]['requester_id'] != session['user_id']:
+                return jsonify({'error': 'Not authorized'}), 403
+        
         file_path = video['file_path']
         
         if not os.path.exists(file_path):
             return jsonify({'error': 'Video file not found'}), 404
-        
-        # Increment view count
-        supabase.table('videos').update({
-            'view_count': supabase.table('videos').select('view_count').eq('share_token', share_token).execute().data[0].get('view_count', 0) + 1,
-            'last_viewed_at': datetime.utcnow().isoformat()
-        }).eq('share_token', share_token).execute()
         
         mimetype = mimetypes.guess_type(file_path)[0] or 'video/mp4'
         return send_file(file_path, mimetype=mimetype, as_attachment=False)
@@ -336,211 +484,37 @@ def stream_video(share_token):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ============ FAMILY VIDEO ROUTES ============
-
-@app.route('/api/family/videos', methods=['POST'])
-def create_family_video():
-    """Create a family video entry and return shareable link"""
-    try:
-        data = request.get_json()
-        
-        required_fields = ['sender_id', 'title']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
-        
-        share_token = generate_video_token()
-        
-        video_data = {
-            'id': str(uuid.uuid4()),
-            'sender_id': data['sender_id'],
-            'title': data['title'],
-            'description': data.get('description', ''),
-            'video_type': 'family',
-            'share_token': share_token,
-            'status': 'pending_upload',
-            'created_at': datetime.utcnow().isoformat()
-        }
-        
-        result = supabase.table('videos').insert(video_data).execute()
-        
-        if result.data:
-            share_url = f"{request.host_url}watch/{share_token}"
-            return jsonify({
-                'message': 'Family video created successfully',
-                'video': result.data[0],
-                'share_url': share_url
-            }), 201
-        else:
-            return jsonify({'error': 'Failed to create video'}), 500
-            
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/family/videos/<video_id>/upload', methods=['POST'])
-def upload_family_video_file(video_id):
-    """Upload the actual video file for a family video"""
-    try:
-        if 'video' not in request.files:
-            return jsonify({'error': 'No video file provided'}), 400
-        
-        file = request.files['video']
-        
-        if not allowed_file(file.filename):
-            return jsonify({'error': 'Invalid file type'}), 400
-        
-        # Generate unique filename
-        file_extension = file.filename.rsplit('.', 1)[1].lower()
-        unique_filename = f"{uuid.uuid4()}.{file_extension}"
-        file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        
-        # Save file
-        file.save(file_path)
-        
-        # Update video record
-        result = supabase.table('videos').update({
-            'filename': unique_filename,
-            'original_filename': secure_filename(file.filename),
-            'file_path': file_path,
-            'status': 'completed',
-            'uploaded_at': datetime.utcnow().isoformat()
-        }).eq('id', video_id).execute()
-        
-        if result.data:
-            return jsonify({
-                'message': 'Video uploaded successfully',
-                'video': result.data[0]
-            }), 200
-        else:
-            # Clean up file if database update failed
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            return jsonify({'error': 'Failed to update video record'}), 500
-            
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 # ============ ADMIN ROUTES ============
 
-@app.route('/api/admin/celebrities/pending', methods=['GET'])
-def get_pending_celebrities():
-    """Get celebrities pending verification"""
+@app.route('/admin/verify-celebrity/<celebrity_id>')
+def verify_celebrity(celebrity_id):
+    """Admin route to verify celebrity (simplified for demo)"""
     try:
-        pending_result = supabase.table('profiles').select('*').eq('is_celebrity', True).eq('celebrity_verified', False).execute()
-        return jsonify({'pending_celebrities': pending_result.data}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/admin/celebrities/<celebrity_id>/verify', methods=['POST'])
-def admin_verify_celebrity(celebrity_id):
-    """Admin verify celebrity"""
-    try:
-        data = request.get_json()
-        
-        update_data = {
+        result = supabase.table('users').update({
             'celebrity_verified': True,
-            'verification_date': datetime.utcnow().isoformat(),
             'updated_at': datetime.utcnow().isoformat()
-        }
-        
-        if data.get('category'):
-            update_data['celebrity_category'] = data['category']
-        if data.get('bio'):
-            update_data['celebrity_bio'] = data['bio']
-        if data.get('price'):
-            update_data['celebrity_price'] = data['price']
-        
-        result = supabase.table('profiles').update(update_data).eq('id', celebrity_id).execute()
+        }).eq('id', celebrity_id).execute()
         
         if result.data:
-            return jsonify({
-                'message': 'Celebrity verified successfully',
-                'celebrity': result.data[0]
-            }), 200
+            flash('Celebrity verified successfully', 'success')
         else:
-            return jsonify({'error': 'Celebrity not found'}), 404
+            flash('Celebrity not found', 'error')
             
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# ============ VIDEO VIEWER ROUTES ============
-
-@app.route('/api/videos/public/<share_token>')
-def view_shared_video(share_token):
-    """Public route for viewing shared videos"""
-    try:
-        video_result = supabase.table('videos').select('''
-            *,
-            sender:profiles!videos_sender_id_fkey(first_name, last_name),
-            uploader:profiles!videos_uploader_id_fkey(first_name, last_name)
-        ''').eq('share_token', share_token).execute()
-        
-        if not video_result.data:
-            return jsonify({'error': 'Video not found'}), 404
-        
-        video = video_result.data[0]
-        
-        # Don't expose sensitive file paths in public API
-        public_video_data = {
-            'id': video['id'],
-            'title': video['title'],
-            'description': video['description'],
-            'video_type': video['video_type'],
-            'created_at': video['created_at'],
-            'sender': video.get('sender'),
-            'uploader': video.get('uploader')
-        }
-        
-        return jsonify({'video': public_video_data}), 200
+        return redirect(url_for('index'))
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# ============ UTILITY ROUTES ============
-
-@app.route('/api/health')
-def health_check():
-    """Health check endpoint"""
-    return jsonify({
-        'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
-        'version': '1.0.0'
-    }), 200
-
-@app.route('/api/stats', methods=['GET'])
-def get_platform_stats():
-    """Get platform statistics"""
-    try:
-        # Get counts
-        celebrities_count = supabase.table('profiles').select('id', count='exact').eq('celebrity_verified', True).execute()
-        users_count = supabase.table('profiles').select('id', count='exact').execute()
-        videos_count = supabase.table('videos').select('id', count='exact').execute()
-        requests_count = supabase.table('video_requests').select('id', count='exact').execute()
-        
-        return jsonify({
-            'stats': {
-                'verified_celebrities': celebrities_count.count if celebrities_count.count else 0,
-                'total_users': users_count.count if users_count.count else 0,
-                'total_videos': videos_count.count if videos_count.count else 0,
-                'total_requests': requests_count.count if requests_count.count else 0
-            }
-        }), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error verifying celebrity: {str(e)}', 'error')
+        return redirect(url_for('index'))
 
 # ============ ERROR HANDLERS ============
 
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({'error': 'Endpoint not found'}), 404
+    return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(error):
-    return jsonify({'error': 'Internal server error'}), 500
-
-@app.errorhandler(413)
-def file_too_large(error):
-    return jsonify({'error': 'File too large. Maximum size is 100MB'}), 413
+    return render_template('500.html'), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
