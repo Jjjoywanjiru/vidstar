@@ -373,7 +373,7 @@ def upload_video(request_id):
     
     return redirect(url_for('upload_video_page', request_id=request_id))
 
-@app.route('/watch/<int:request_id>')
+@app.route('/watch/<request_id>')
 def watch_video(request_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
@@ -400,7 +400,7 @@ def watch_video(request_id):
     
     return render_template('watch_video.html', request=video_request, video=video)
 
-@app.route('/api/download-video/<int:video_id>')
+@app.route('/api/download-video/<video_id>')
 def download_video(video_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
@@ -447,7 +447,7 @@ def download_video(video_id):
         print(f"Download error: {e}")
         abort(500)
 
-@app.route('/api/stream-video/<int:video_id>')
+@app.route('/api/stream-video/<video_id>')
 def stream_video(video_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
@@ -496,4 +496,4 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)

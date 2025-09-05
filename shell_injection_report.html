@@ -1,0 +1,863 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+    Bandit Report
+</title>
+
+<style>
+
+html * {
+    font-family: "Arial", sans-serif;
+}
+
+pre {
+    font-family: "Monaco", monospace;
+}
+
+.bordered-box {
+    border: 1px solid black;
+    padding-top:.5em;
+    padding-bottom:.5em;
+    padding-left:1em;
+}
+
+.metrics-box {
+    font-size: 1.1em;
+    line-height: 130%;
+}
+
+.metrics-title {
+    font-size: 1.5em;
+    font-weight: 500;
+    margin-bottom: .25em;
+}
+
+.issue-description {
+    font-size: 1.3em;
+    font-weight: 500;
+}
+
+.candidate-issues {
+    margin-left: 2em;
+    border-left: solid 1px; LightGray;
+    padding-left: 5%;
+    margin-top: .2em;
+    margin-bottom: .2em;
+}
+
+.issue-block {
+    border: 1px solid LightGray;
+    padding-left: .5em;
+    padding-top: .5em;
+    padding-bottom: .5em;
+    margin-bottom: .5em;
+}
+
+.issue-sev-high {
+    background-color: Pink;
+}
+
+.issue-sev-medium {
+    background-color: NavajoWhite;
+}
+
+.issue-sev-low {
+    background-color: LightCyan;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="metrics">
+    <div class="metrics-box bordered-box">
+        <div class="metrics-title">
+            Metrics:<br>
+        </div>
+        Total lines of code: <span id="loc">215038</span><br>
+        Total lines skipped (#nosec): <span id="nosec">0</span>
+    </div>
+</div>
+
+
+
+
+<br>
+<div id="results">
+    
+<div id="issue-0">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_internal\cli\main_parser.py" target="_blank">.\venv\Lib\site-packages\pip\_internal\cli\main_parser.py</a><br>
+    <b>Line number: </b>101<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+100	        try:
+101	            proc = subprocess.run(pip_cmd)
+102	            returncode = proc.returncode
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-1">
+<div class="issue-block issue-sev-medium">
+    <b>any_other_function_with_shell_equals_true: </b> Function call with shell=True parameter identified, possible security issue.<br>
+    <b>Test ID:</b> B604<br>
+    <b>Severity: </b>MEDIUM<br>
+    <b>Confidence: </b>LOW<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_internal\commands\completion.py" target="_blank">.\venv\Lib\site-packages\pip\_internal\commands\completion.py</a><br>
+    <b>Line number: </b>120<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b604_any_other_function_with_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b604_any_other_function_with_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+119	            )
+120	            print(BASE_COMPLETION.format(script=script, shell=options.shell))
+121	            return SUCCESS
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-2">
+<div class="issue-block issue-sev-high">
+    <b>subprocess_popen_with_shell_equals_true: </b> subprocess call with shell=True identified, security issue.<br>
+    <b>Test ID:</b> B602<br>
+    <b>Severity: </b>HIGH<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_internal\commands\configuration.py" target="_blank">.\venv\Lib\site-packages\pip\_internal\commands\configuration.py</a><br>
+    <b>Line number: </b>239<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b602_subprocess_popen_with_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b602_subprocess_popen_with_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+238	        try:
+239	            subprocess.check_call(f&#x27;{editor} &quot;{fname}&quot;&#x27;, shell=True)
+240	        except FileNotFoundError as e:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-3">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_internal\network\session.py" target="_blank">.\venv\Lib\site-packages\pip\_internal\network\session.py</a><br>
+    <b>Line number: </b>182<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+181	        try:
+182	            rustc_output = subprocess.check_output(
+183	                [&quot;rustc&quot;, &quot;--version&quot;], stderr=subprocess.STDOUT, timeout=0.5
+184	            )
+185	        except Exception:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-4">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_internal\utils\subprocess.py" target="_blank">.\venv\Lib\site-packages\pip\_internal\utils\subprocess.py</a><br>
+    <b>Line number: </b>141<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+140	    try:
+141	        proc = subprocess.Popen(
+142	            # Convert HiddenText objects to the underlying str.
+143	            reveal_command_args(cmd),
+144	            stdin=subprocess.PIPE,
+145	            stdout=subprocess.PIPE,
+146	            stderr=subprocess.STDOUT if not stdout_only else subprocess.PIPE,
+147	            cwd=cwd,
+148	            env=env,
+149	            errors=&quot;backslashreplace&quot;,
+150	        )
+151	    except Exception as exc:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-5">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\distlib\index.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\distlib\index.py</a><br>
+    <b>Line number: </b>57<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+56	                try:
+57	                    rc = subprocess.check_call([s, &#x27;--version&#x27;], stdout=sink,
+58	                                               stderr=sink)
+59	                    if rc == 0:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-6">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\distlib\index.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\distlib\index.py</a><br>
+    <b>Line number: </b>192<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+191	        stderr = []
+192	        p = subprocess.Popen(cmd, **kwargs)
+193	        # We don&#x27;t use communicate() here because we may need to
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-7">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\distlib\util.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\distlib\util.py</a><br>
+    <b>Line number: </b>1712<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+1711	    def run_command(self, cmd, **kwargs):
+1712	        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+1713	                             stderr=subprocess.PIPE, **kwargs)
+1714	        t1 = threading.Thread(target=self.reader, args=(p.stdout, &#x27;stdout&#x27;))
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-8">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\distro\distro.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\distro\distro.py</a><br>
+    <b>Line number: </b>1136<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+1135	            cmd = (&quot;lsb_release&quot;, &quot;-a&quot;)
+1136	            stdout = subprocess.check_output(cmd, stderr=subprocess.DEVNULL)
+1137	        # Command not found or lsb_release returned error
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-9">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\distro\distro.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\distro\distro.py</a><br>
+    <b>Line number: </b>1173<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+1172	            cmd = (&quot;uname&quot;, &quot;-rs&quot;)
+1173	            stdout = subprocess.check_output(cmd, stderr=subprocess.DEVNULL)
+1174	        except OSError:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-10">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\distro\distro.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\distro\distro.py</a><br>
+    <b>Line number: </b>1184<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+1183	        try:
+1184	            stdout = subprocess.check_output(&quot;oslevel&quot;, stderr=subprocess.DEVNULL)
+1185	        except (OSError, subprocess.CalledProcessError):
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-11">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py</a><br>
+    <b>Line number: </b>106<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+105	        return None
+106	    proc = subprocess.run([ld], stderr=subprocess.PIPE, universal_newlines=True)
+107	    return _parse_musl_version(proc.stderr)
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-12">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\pep517\envbuild.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\pep517\envbuild.py</a><br>
+    <b>Line number: </b>103<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+102	            &#x27;--prefix&#x27;, self.path] + list(reqs)
+103	        check_call(
+104	            cmd,
+105	            stdout=LoggerWrapper(log, logging.INFO),
+106	            stderr=LoggerWrapper(log, logging.ERROR),
+107	        )
+108	
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-13">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\pep517\wrappers.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\pep517\wrappers.py</a><br>
+    <b>Line number: </b>67<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+66	
+67	    check_call(cmd, cwd=cwd, env=env)
+68	
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-14">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\pep517\wrappers.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\pep517\wrappers.py</a><br>
+    <b>Line number: </b>76<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+75	
+76	    check_output(cmd, cwd=cwd, env=env, stderr=STDOUT)
+77	
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-15">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pip\_vendor\pygments\formatters\img.py" target="_blank">.\venv\Lib\site-packages\pip\_vendor\pygments\formatters\img.py</a><br>
+    <b>Line number: </b>85<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+84	    def _get_nix_font_path(self, name, style):
+85	        proc = subprocess.Popen([&#x27;fc-list&#x27;, &quot;%s:style=%s&quot; % (name, style), &#x27;file&#x27;],
+86	                                stdout=subprocess.PIPE, stderr=None)
+87	        stdout, _ = proc.communicate()
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-16">
+<div class="issue-block issue-sev-medium">
+    <b>any_other_function_with_shell_equals_true: </b> Function call with shell=True parameter identified, possible security issue.<br>
+    <b>Test ID:</b> B604<br>
+    <b>Severity: </b>MEDIUM<br>
+    <b>Confidence: </b>LOW<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pkg_resources\_vendor\jaraco\context.py" target="_blank">.\venv\Lib\site-packages\pkg_resources\_vendor\jaraco\context.py</a><br>
+    <b>Line number: </b>31<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b604_any_other_function_with_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b604_any_other_function_with_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+30	    if runner is None:
+31	        runner = functools.partial(subprocess.check_call, shell=True)
+32	    # In the tar command, use --strip-components=1 to strip the first path and
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-17">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pkg_resources\_vendor\jaraco\context.py" target="_blank">.\venv\Lib\site-packages\pkg_resources\_vendor\jaraco\context.py</a><br>
+    <b>Line number: </b>87<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+86	        stdout = devnull if quiet else None
+87	        subprocess.check_call(cmd, stdout=stdout)
+88	        yield repo_dir
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-18">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\pkg_resources\_vendor\packaging\_musllinux.py" target="_blank">.\venv\Lib\site-packages\pkg_resources\_vendor\packaging\_musllinux.py</a><br>
+    <b>Line number: </b>106<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+105	        return None
+106	    proc = subprocess.run([ld], stderr=subprocess.PIPE, universal_newlines=True)
+107	    return _parse_musl_version(proc.stderr)
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-19">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_distutils\_msvccompiler.py" target="_blank">.\venv\Lib\site-packages\setuptools\_distutils\_msvccompiler.py</a><br>
+    <b>Line number: </b>83<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+82	    try:
+83	        path = subprocess.check_output(
+84	            [
+85	                os.path.join(
+86	                    root, &quot;Microsoft Visual Studio&quot;, &quot;Installer&quot;, &quot;vswhere.exe&quot;
+87	                ),
+88	                &quot;-latest&quot;,
+89	                &quot;-prerelease&quot;,
+90	                &quot;-requires&quot;,
+91	                &quot;Microsoft.VisualStudio.Component.VC.Tools.x86.x64&quot;,
+92	                &quot;-property&quot;,
+93	                &quot;installationPath&quot;,
+94	                &quot;-products&quot;,
+95	                &quot;*&quot;,
+96	            ],
+97	            encoding=&quot;mbcs&quot;,
+98	            errors=&quot;strict&quot;,
+99	        ).strip()
+100	    except (subprocess.CalledProcessError, OSError, UnicodeDecodeError):
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-20">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_distutils\_msvccompiler.py" target="_blank">.\venv\Lib\site-packages\setuptools\_distutils\_msvccompiler.py</a><br>
+    <b>Line number: </b>146<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+145	    try:
+146	        out = subprocess.check_output(
+147	            f&#x27;cmd /u /c &quot;{vcvarsall}&quot; {plat_spec} &amp;&amp; set&#x27;,
+148	            stderr=subprocess.STDOUT,
+149	        ).decode(&#x27;utf-16le&#x27;, errors=&#x27;replace&#x27;)
+150	    except subprocess.CalledProcessError as exc:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-21">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_distutils\command\_framework_compat.py" target="_blank">.\venv\Lib\site-packages\setuptools\_distutils\command\_framework_compat.py</a><br>
+    <b>Line number: </b>45<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+44	        return {}
+45	    homebrew_prefix = subprocess.check_output([&#x27;brew&#x27;, &#x27;--prefix&#x27;], text=True).strip()
+46	    return locals()
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-22">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_distutils\cygwinccompiler.py" target="_blank">.\venv\Lib\site-packages\setuptools\_distutils\cygwinccompiler.py</a><br>
+    <b>Line number: </b>356<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+355	    &#x27;&#x27;&#x27;Try to determine if the compiler that would be used is from cygwin.&#x27;&#x27;&#x27;
+356	    out_string = check_output(shlex.split(cc) + [&#x27;-dumpmachine&#x27;])
+357	    return out_string.strip().endswith(b&#x27;cygwin&#x27;)
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-23">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_distutils\msvc9compiler.py" target="_blank">.\venv\Lib\site-packages\setuptools\_distutils\msvc9compiler.py</a><br>
+    <b>Line number: </b>283<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+282	    log.debug(&quot;Calling &#x27;vcvarsall.bat %s&#x27; (version=%s)&quot;, arch, version)
+283	    popen = subprocess.Popen(
+284	        &#x27;&quot;{}&quot; {} &amp; set&#x27;.format(vcvarsall, arch),
+285	        stdout=subprocess.PIPE,
+286	        stderr=subprocess.PIPE,
+287	    )
+288	    try:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-24">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_distutils\spawn.py" target="_blank">.\venv\Lib\site-packages\setuptools\_distutils\spawn.py</a><br>
+    <b>Line number: </b>57<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+56	    try:
+57	        proc = subprocess.Popen(cmd, env=env)
+58	        proc.wait()
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-25">
+<div class="issue-block issue-sev-medium">
+    <b>any_other_function_with_shell_equals_true: </b> Function call with shell=True parameter identified, possible security issue.<br>
+    <b>Test ID:</b> B604<br>
+    <b>Severity: </b>MEDIUM<br>
+    <b>Confidence: </b>LOW<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_vendor\jaraco\context.py" target="_blank">.\venv\Lib\site-packages\setuptools\_vendor\jaraco\context.py</a><br>
+    <b>Line number: </b>31<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b604_any_other_function_with_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b604_any_other_function_with_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+30	    if runner is None:
+31	        runner = functools.partial(subprocess.check_call, shell=True)
+32	    # In the tar command, use --strip-components=1 to strip the first path and
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-26">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_vendor\jaraco\context.py" target="_blank">.\venv\Lib\site-packages\setuptools\_vendor\jaraco\context.py</a><br>
+    <b>Line number: </b>87<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+86	        stdout = devnull if quiet else None
+87	        subprocess.check_call(cmd, stdout=stdout)
+88	        yield repo_dir
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-27">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\_vendor\packaging\_musllinux.py" target="_blank">.\venv\Lib\site-packages\setuptools\_vendor\packaging\_musllinux.py</a><br>
+    <b>Line number: </b>106<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+105	        return None
+106	    proc = subprocess.run([ld], stderr=subprocess.PIPE, universal_newlines=True)
+107	    return _parse_musl_version(proc.stderr)
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-28">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\installer.py" target="_blank">.\venv\Lib\site-packages\setuptools\installer.py</a><br>
+    <b>Line number: </b>82<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+81	        try:
+82	            subprocess.check_call(cmd)
+83	        except subprocess.CalledProcessError as e:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-29">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\msvc.py" target="_blank">.\venv\Lib\site-packages\setuptools\msvc.py</a><br>
+    <b>Line number: </b>91<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+90	    try:
+91	        path = subprocess.check_output([
+92	            join(root, &quot;Microsoft Visual Studio&quot;, &quot;Installer&quot;, &quot;vswhere.exe&quot;),
+93	            &quot;-latest&quot;,
+94	            &quot;-prerelease&quot;,
+95	            &quot;-requiresAny&quot;,
+96	            &quot;-requires&quot;, &quot;Microsoft.VisualStudio.Component.VC.Tools.x86.x64&quot;,
+97	            &quot;-requires&quot;, &quot;Microsoft.VisualStudio.Workload.WDExpress&quot;,
+98	            &quot;-property&quot;, &quot;installationPath&quot;,
+99	            &quot;-products&quot;, &quot;*&quot;,
+100	        ]).decode(encoding=&quot;mbcs&quot;, errors=&quot;strict&quot;).strip()
+101	    except (subprocess.CalledProcessError, OSError, UnicodeDecodeError):
+</pre>
+</div>
+
+
+</div>
+</div>
+
+<div id="issue-30">
+<div class="issue-block issue-sev-low">
+    <b>subprocess_without_shell_equals_true: </b> subprocess call - check for execution of untrusted input.<br>
+    <b>Test ID:</b> B603<br>
+    <b>Severity: </b>LOW<br>
+    <b>Confidence: </b>HIGH<br>
+    <b>CWE: </b><a href="https://cwe.mitre.org/data/definitions/78.html" target="_blank">CWE-78</a><br>
+    <b>File: </b><a href=".\venv\Lib\site-packages\setuptools\msvc.py" target="_blank">.\venv\Lib\site-packages\setuptools\msvc.py</a><br>
+    <b>Line number: </b>173<br>
+    <b>More info: </b><a href="https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html" target="_blank">https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html</a><br>
+
+<div class="code">
+<pre>
+172	    try:
+173	        out = subprocess.check_output(
+174	            &#x27;cmd /u /c &quot;{}&quot; {} &amp;&amp; set&#x27;.format(vcvarsall, plat_spec),
+175	            stderr=subprocess.STDOUT,
+176	        ).decode(&#x27;utf-16le&#x27;, errors=&#x27;replace&#x27;)
+177	    except subprocess.CalledProcessError as exc:
+</pre>
+</div>
+
+
+</div>
+</div>
+
+</div>
+
+</body>
+</html>
