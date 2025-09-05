@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Video - VidStar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #dc2626;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #dc2626;
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .back-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .upload-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-card h1 {
+            color: #dc2626;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .request-info {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .request-info h3 {
+            color: #dc2626;
+            margin-bottom: 1rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            color: #e5e7eb;
+        }
+
+        .info-label {
+            color: #9ca3af;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .message-details {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid #dc2626;
+        }
+
+        .upload-section {
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 3px dashed rgba(220, 38, 38, 0.5);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #dc2626;
+            background: rgba(220, 38, 38, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #dc2626;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            color: #e5e7eb;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtitle {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        #videoFile {
+            display: none;
+        }
+
+        .file-info {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .file-name {
+            color: #22c55e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-details {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        .upload-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(45deg, #dc2626, #b91c1c);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #374151;
+            color: #e5e7eb;
+        }
+
+        .requirements {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .requirements h4 {
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+
+        .requirements ul {
+            color: #d1d5db;
+            padding-left: 1.5rem;
+        }
+
+        .requirements li {
+            margin-bottom: 0.5rem;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            background: rgba(220, 38, 38, 0.9);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .flash-success {
+            background: rgba(34, 197, 94, 0.9);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.9);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .upload-card {
+                padding: 1.5rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .upload-area {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">VidStar</div>
+            <a href="/celebrity-dashboard" class="back-btn">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="upload-card">
+            <h1>📹 Upload Custom Video</h1>
+
+            <div class="request-info">
+                <h3>Request Details</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Requested by:</div>
+                        {{ request.requester.first_name }} {{ request.requester.last_name }}
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">For:</div>
+                        {{ request.recipient_name }}
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Occasion:</div>
+                        {{ request.occasion }}
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Request Date:</div>
+                        {{ request.created_at[:10] }}
+                    </div>
+                </div>
+                
+                <div class="message-details">
+                    <div class="info-label">Special Message:</div>
+                    {{ request.message_details }}
+                </div>
+            </div>
+
+            <div class="requirements">
+                <h4>📋 Video Requirements</h4>
+                <ul>
+                    <li>Supported formats: MP4, AVI, MOV, MKV, WMV, FLV, WEBM</li>
+                    <li>Maximum file size: 500MB</li>
+                    <li>Recommended resolution: 1080p or higher</li>
+                    <li>Ensure good audio quality and lighting</li>
+                    <li>Keep the video personal and engaging</li>
+                </ul>
+            </div>
+
+            <div class="upload-section">
+                <form id="uploadForm" action="/api/upload-video/{{ request.id }}" method="POST" enctype="multipart/form-data">
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('videoFile').click()">
+                        <div class="upload-icon">🎬</div>
+                        <div class="upload-text">Click to select video or drag and drop</div>
+                        <div class="upload-subtitle">Choose your custom video file</div>
+                        <input type="file" id="videoFile" name="video" accept=".mp4,.avi,.mov,.mkv,.wmv,.flv,.webm,video/*" required>
+                    </div>
+
+                    <div class="file-info" id="fileInfo">
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-details" id="fileDetails"></div>
+                    </div>
+
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                            Upload Video
+                        </button>
+                        <a href="/celebrity-dashboard" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('videoFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileDetails = document.getElementById('fileDetails');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+
+        // Allowed file types
+        const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/quicktime', 
+                             'video/x-msvideo', 'video/x-ms-wmv', 'video/x-flv', 'video/webm'];
+        const maxSize = 500 * 1024 * 1024; // 500MB
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            // Validate file type
+            if (!allowedTypes.some(type => file.type.includes(type.split('/')[1]))) {
+                alert('Please select a valid video file (MP4, AVI, MOV, MKV, WMV, FLV, WEBM)');
+                return;
+            }
+
+            // Validate file size
+            if (file.size > maxSize) {
+                alert('File size must be less than 500MB');
+                return;
+            }
+
+            // Show file info
+            fileName.textContent = file.name;
+            fileDetails.innerHTML = `
+                Size: ${formatFileSize(file.size)}<br>
+                Type: ${file.type || 'Unknown'}
+            `;
+            fileInfo.style.display = 'block';
+            uploadBtn.disabled = false;
+
+            // Update file input
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Form submission with progress
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a video file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('video', fileInput.files[0]);
+
+            // Show progress
+            uploadProgress.style.display = 'block';
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+
+            // XMLHttpRequest for progress tracking
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    // Success - redirect will be handled by the response
+                    window.location.href = '/celebrity-dashboard';
+                } else {
+                    alert('Upload failed. Please try again.');
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = 'Upload Video';
+                    uploadProgress.style.display = 'none';
+                }
+            });
+
+            xhr.addEventListener('error', () => {
+                alert('Upload failed. Please try again.');
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload Video';
+                uploadProgress.style.display = 'none';
+            });
+
+            xhr.open('POST', uploadForm.action);
+            xhr.send(formData);
+        });
+
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.flash-message');
+            messages.forEach(message => {
+                message.style.opacity = '0';
+                message.style.transform = 'translateX(100%)';
+                setTimeout(() => message.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

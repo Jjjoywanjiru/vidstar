@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Video - VidStar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #dc2626;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #dc2626;
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .back-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .video-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .video-player {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 16px;
+            border: 2px solid rgba(220, 38, 38, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .video-controls {
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .video-title {
+            color: #dc2626;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #374151;
+            color: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        .video-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .video-info h3 {
+            color: #dc2626;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .info-item {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(220, 38, 38, 0.1);
+        }
+
+        .info-label {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: #e5e7eb;
+            font-size: 1rem;
+        }
+
+        .message-details {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid #dc2626;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: #dc2626;
+            font-size: 1.2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(220, 38, 38, 0.2);
+            border-left: 4px solid #dc2626;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: #ef4444;
+            font-size: 1.2rem;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            background: rgba(220, 38, 38, 0.9);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .flash-success {
+            background: rgba(34, 197, 94, 0.9);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .share-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            padding: 2rem;
+            margin-top: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .share-section h3 {
+            color: #dc2626;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .share-text {
+            color: #9ca3af;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .video-section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .video-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .share-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">VidStar</div>
+            <a href="{% if session.is_celebrity %}/celebrity-dashboard{% else %}/dashboard{% endif %}" class="back-btn">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="video-section">
+            <div class="video-player">
+                <div class="video-container">
+                    <video id="videoPlayer" controls preload="metadata" poster="">
+                        <source src="/api/stream-video/{{ video.id }}" type="{{ video.file_type }}">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <div class="video-controls">
+                    <div class="video-title">
+                        🎬 Custom Video for {{ request.recipient_name }}
+                    </div>
+                    
+                    <div class="video-actions">
+                        <a href="/api/download-video/{{ video.id }}" class="btn btn-primary" download>
+                            📥 Download Video
+                        </a>
+                        <button onclick="shareVideo()" class="btn btn-secondary">
+                            🔗 Share
+                        </button>
+                        <button onclick="toggleFullscreen()" class="btn btn-secondary">
+                            ⛶ Fullscreen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-info">
+                <h3>📋 Video Details</h3>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Celebrity</div>
+                        <div class="info-value">{{ request.celebrity.first_name }} {{ request.celebrity.last_name }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">For</div>
+                        <div class="info-value">{{ request.recipient_name }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Occasion</div>
+                        <div class="info-value">{{ request.occasion }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Request Date</div>
+                        <div class="info-value">{{ request.created_at[:10] }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Completed</div>
+                        <div class="info-value">{{ request.completed_at[:10] if request.completed_at else 'N/A' }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">File Size</div>
+                        <div class="info-value">{{ "%.1f MB"|format(video.file_size / 1024 / 1024) }}</div>
+                    </div>
+                </div>
+
+                <div class="message-details">
+                    <div class="info-label">Original Request</div>
+                    <div class="info-value">{{ request.message_details }}</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="viewCount">1</div>
+                        <div class="stat-label">Views</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="downloadCount">0</div>
+                        <div class="stat-label">Downloads</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="share-section">
+            <h3>🎉 Share Your Special Video</h3>
+            <p class="share-text">
+                Share this amazing personalized video with friends and family! 
+                Let them know you received a custom message from {{ request.celebrity.first_name }} {{ request.celebrity.last_name }}.
+            </p>
+            
+            <div class="share-buttons">
+                <button onclick="copyVideoLink()" class="btn btn-secondary">
+                    📋 Copy Link
+                </button>
+                <button onclick="shareToSocial('twitter')" class="btn btn-secondary">
+                    🐦 Twitter
+                </button>
+                <button onclick="shareToSocial('facebook')" class="btn btn-secondary">
+                    📘 Facebook
+                </button>
+                <button onclick="shareToSocial('whatsapp')" class="btn btn-secondary">
+                    💬 WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoPlayer');
+        let hasStartedPlaying = false;
+
+        // Video event listeners
+        video.addEventListener('loadstart', () => {
+            console.log('Video loading started');
+        });
+
+        video.addEventListener('loadeddata', () => {
+            console.log('Video data loaded');
+        });
+
+        video.addEventListener('play', () => {
+            if (!hasStartedPlaying) {
+                hasStartedPlaying = true;
+                // Could track view analytics here
+                updateViewCount();
+            }
+        });
+
+        video.addEventListener('error', (e) => {
+            console.error('Video error:', e);
+            document.querySelector('.video-container').innerHTML = `
+                <div class="error-message">
+                    ❌ Error loading video. Please try refreshing the page or contact support.
+                </div>
+            `;
+        });
+
+        function updateViewCount() {
+            // This would typically make an API call to increment view count
+            // For now, just increment the display
+            const viewCount = document.getElementById('viewCount');
+            const currentCount = parseInt(viewCount.textContent);
+            viewCount.textContent = currentCount;
+        }
+
+        function toggleFullscreen() {
+            if (video.requestFullscreen) {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    video.requestFullscreen();
+                }
+            } else if (video.webkitRequestFullscreen) {
+                if (document.webkitFullscreenElement) {
+                    document.webkitExitFullscreen();
+                } else {
+                    video.webkitRequestFullscreen();
+                }
+            }
+        }
+
+        function shareVideo() {
+            if (navigator.share) {
+                navigator.share({
+                    title: `Custom Video from {{ request.celebrity.first_name }} {{ request.celebrity.last_name }}`,
+                    text: `Check out this personalized video I got for {{ request.recipient_name }}!`,
+                    url: window.location.href
+                });
+            } else {
+                copyVideoLink();
+            }
+        }
+
+        function copyVideoLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                // Show success message
+                const message = document.createElement('div');
+                message.className = 'flash-message flash-success';
+                message.textContent = 'Video link copied to clipboard!';
+                document.querySelector('.flash-messages').appendChild(message);
+                
+                setTimeout(() => message.remove(), 3000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = window.location.href;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const message = document.createElement('div');
+                message.className = 'flash-message flash-success';
+                message.textContent = 'Video link copied to clipboard!';
+                document.querySelector('.flash-messages').appendChild(message);
+                
+                setTimeout(() => message.remove(), 3000);
+            });
+        }
+
+        function shareToSocial(platform) {
+            const videoUrl = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(`Check out this personalized video I got from {{ request.celebrity.first_name }} {{ request.celebrity.last_name }} for {{ request.recipient_name }}!`);
+            
+            let shareUrl = '';
+            
+            switch(platform) {
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${videoUrl}`;
+                    break;
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${videoUrl}`;
+                    break;
+                case 'whatsapp':
+                    shareUrl = `https://wa.me/?text=${text}%20${videoUrl}`;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        }
+
+        // Track download when download button is clicked
+        document.querySelector('a[download]').addEventListener('click', () => {
+            const downloadCount = document.getElementById('downloadCount');
+            const currentCount = parseInt(downloadCount.textContent);
+            downloadCount.textContent = currentCount + 1;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && e.target.tagName !== 'BUTTON') {
+                e.preventDefault();
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            } else if (e.code === 'KeyF') {
+                toggleFullscreen();
+            }
+        });
+
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.flash-message');
+            messages.forEach(message => {
+                message.style.opacity = '0';
+                message.style.transform = 'translateX(100%)';
+                setTimeout(() => message.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
