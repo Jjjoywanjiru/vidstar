@@ -432,7 +432,7 @@
                                 <div class="status-badge status-{{ request.status }}">{{ request.status }}</div>
                                 {% if request.status == 'completed' and request.video_id %}
                                     <br><br>
-                                    <a href="/watch/{{ request.video_id }}" class="watch-btn">Watch Video</a>
+                                    <a href="/watch/{{ request.id }}" class="watch-btn">Watch Video</a>
                                 {% endif %}
                             </div>
                         </div>
